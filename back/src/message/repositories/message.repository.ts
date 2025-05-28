@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { Message, Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Message, Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
 import {
   MessageCreateInput,
   MessageWithUser,
   MessageWithRelations,
   MessageStats,
   MessageSearchFilters,
-} from '../../core/types/message.types';
+} from "../../core/types/message.types";
 
 export interface IMessageRepository {
   findWithUser(id: string): Promise<MessageWithUser | null>;
@@ -15,7 +15,7 @@ export interface IMessageRepository {
   findByRoomId(
     roomId: string,
     limit?: number,
-    cursor?: string,
+    cursor?: string
   ): Promise<MessageWithUser[]>;
   findByUserId(userId: string, limit?: number): Promise<MessageWithUser[]>;
   getMessageStats(): Promise<MessageStats>;
@@ -88,7 +88,7 @@ export class MessageRepository {
     const where: Prisma.MessageWhereInput = {};
 
     if (content) {
-      where.content = { contains: content, mode: 'insensitive' };
+      where.content = { contains: content, mode: "insensitive" };
     }
 
     if (userId) {
@@ -124,7 +124,7 @@ export class MessageRepository {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -187,7 +187,7 @@ export class MessageRepository {
   async findByRoomId(
     roomId: string,
     limit: number = 50,
-    cursor?: string,
+    cursor?: string
   ): Promise<MessageWithUser[]> {
     const where: Prisma.MessageWhereInput = { roomId };
 
@@ -206,14 +206,23 @@ export class MessageRepository {
             email: true,
           },
         },
+        storage: {
+          select: {
+            id: true,
+            filename: true,
+            originalName: true,
+            url: true,
+            mimetype: true,
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async findByUserId(
     userId: string,
-    limit: number = 50,
+    limit: number = 50
   ): Promise<MessageWithUser[]> {
     return this.prisma.message.findMany({
       where: { userId },
@@ -227,7 +236,7 @@ export class MessageRepository {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
