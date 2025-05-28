@@ -1,15 +1,17 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { MessageService } from '../../message/message.service';
-import { ChatGateway } from 'src/chat/chat.gateway';
-import { MessageJobDTO } from '../dto/message-job.dto';
-import { MessageWithRelations } from '../../core/types/message.types';
+import { Processor, WorkerHost } from "@nestjs/bullmq";
+import { Job } from "bullmq";
+import { MessageService } from "../../message/message.service";
+import { ChatGateway } from "src/chat/chat.gateway";
+import { MessageJobDTO } from "../dto/message-job.dto";
+import { MessageWithRelations } from "../../core/types/message.types";
 
-@Processor('message-queue')
+@Processor("message-queue", {
+  concurrency: 2,
+})
 export class MessageProcessor extends WorkerHost {
   constructor(
     private messageService: MessageService,
-    private chatGateway: ChatGateway,
+    private chatGateway: ChatGateway
   ) {
     super();
   }
@@ -20,7 +22,7 @@ export class MessageProcessor extends WorkerHost {
     try {
       const message: MessageWithRelations = await this.messageService.create(
         { content, roomId, storageId },
-        userId,
+        userId
       );
 
       const sockets = this.chatGateway.server.sockets.sockets;

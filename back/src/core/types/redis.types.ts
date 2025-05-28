@@ -4,8 +4,8 @@ export interface RedisInfo {
 }
 
 export interface HealthCheckResponse {
-  status: 'ok' | 'error';
-  redis: 'connected' | 'disconnected';
+  status: "ok" | "error";
+  redis: "connected" | "disconnected";
   timestamp: string;
   data?: RedisInfo;
   error?: string;
@@ -20,7 +20,7 @@ export interface RedisConfig {
   host: string;
   port: number;
   retryDelayOnFailover: number;
-  maxRetriesPerRequest: number;
+  maxRetriesPerRequest: number | null;
 }
 
 export interface OnlineUser {

@@ -7,14 +7,14 @@ import {
   ConnectedSocket,
   SubscribeMessage,
   MessageBody,
-} from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { createAdapter } from '@socket.io/redis-adapter';
-import { QueueService } from '../queue/queue.service';
-import { JwtService } from '@nestjs/jwt';
-import { JwtSocketMiddleware } from 'src/auth/jwt/jwt-socket.middleware';
-import { RedisService } from '../core/redis/redis.service';
-import { OnlineUser, RoomsWithUsers } from '../core/types/redis.types';
+} from "@nestjs/websockets";
+import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { QueueService } from "../queue/queue.service";
+import { JwtService } from "@nestjs/jwt";
+import { JwtSocketMiddleware } from "src/auth/jwt/jwt-socket.middleware";
+import { RedisService } from "../core/redis/redis.service";
+import { OnlineUser, RoomsWithUsers } from "../core/types/redis.types";
 import {
   MessageData,
   TypingData,
@@ -24,16 +24,16 @@ import {
   OnlineCountData,
   MessageDeletedData,
   NewRoomData,
-} from '../core/types/socket.types';
-import { TypedServer, TypedSocket } from '../types/socket.io';
-import { MessageWithRelations } from '../core/types/message.types';
-import { appConfig } from '../core/config/app.config';
+} from "../core/types/socket.types";
+import { TypedServer, TypedSocket } from "../types/socket.io";
+import { MessageWithRelations } from "../core/types/message.types";
+import { appConfig } from "../core/config/app.config";
 import {
   CLIENT_EVENTS,
   SERVER_EVENTS,
-} from '../core/constants/socket-events.constants';
+} from "../core/constants/socket-events.constants";
 
-export const SocketServer = 'SOCKET_IO_SERVER';
+export const SocketServer = "SOCKET_IO_SERVER";
 
 interface Room {
   id: string;
@@ -45,6 +45,12 @@ interface Room {
     origin: appConfig.corsOrigin,
     credentials: true,
   },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  connectTimeout: 45000,
+  maxHttpBufferSize: 1e6,
+  allowEIO3: true,
+  transports: ["websocket"],
 })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -55,7 +61,7 @@ export class ChatGateway
   constructor(
     private queueService: QueueService,
     private jwtService: JwtService,
-    private redisService: RedisService,
+    private redisService: RedisService
   ) {}
 
   afterInit(server: Server): void {
@@ -66,7 +72,7 @@ export class ChatGateway
     const subClient = this.redisService.getSubClient();
     server.adapter(createAdapter(pubClient, subClient));
 
-    console.log('🔗 ChatGateway inicializado com Redis adapter');
+    console.log("🔗 ChatGateway inicializado com Redis adapter");
   }
 
   handleConnection(client: TypedSocket): void {
@@ -79,13 +85,13 @@ export class ChatGateway
   @SubscribeMessage(CLIENT_EVENTS.JOIN_ROOM)
   async handleJoin(
     @MessageBody() roomId: string,
-    @ConnectedSocket() client: TypedSocket,
+    @ConnectedSocket() client: TypedSocket
   ): Promise<void> {
     const { userId, username } = client.data.user;
 
     if (client.data.currentRoomId === roomId) {
       console.log(
-        `⚠️ Usuário ${username} já está na sala ${roomId}, ignorando join duplicado`,
+        `⚠️ Usuário ${username} já está na sala ${roomId}, ignorando join duplicado`
       );
       await this.emitOnlineUsers(roomId);
       return;
@@ -95,7 +101,7 @@ export class ChatGateway
       const previousRoom = client.data.currentRoomId;
       await this.handleLeave({ roomId: previousRoom }, client);
       console.log(
-        `🔄 Usuário ${username} mudou da sala ${previousRoom} para ${roomId}`,
+        `🔄 Usuário ${username} mudou da sala ${previousRoom} para ${roomId}`
       );
     }
 
@@ -106,13 +112,13 @@ export class ChatGateway
     await this.redisService.removeUserPreviousConnections(
       roomId,
       userId,
-      client.id,
+      client.id
     );
 
     const userAlreadyInRedis = await this.redisService.isUserInRoom(
       roomId,
       userId,
-      client.id,
+      client.id
     );
 
     if (!userAlreadyInRedis) {
@@ -125,11 +131,11 @@ export class ChatGateway
 
       await this.redisService.addUserToRoom(roomId, onlineUser);
       console.log(
-        `✅ Usuário ${username} entrou na sala ${roomId} (adicionado no Redis)`,
+        `✅ Usuário ${username} entrou na sala ${roomId} (adicionado no Redis)`
       );
     } else {
       console.log(
-        `ℹ️ Usuário ${username} já estava no Redis para sala ${roomId}, apenas sincronizando socket`,
+        `ℹ️ Usuário ${username} já estava no Redis para sala ${roomId}, apenas sincronizando socket`
       );
     }
 
@@ -142,14 +148,14 @@ export class ChatGateway
       const users = await this.redisService.getRoomUsers(roomId);
       this.server.to(roomId).emit(SERVER_EVENTS.ONLINE_USERS, users);
     } catch (error) {
-      console.error('❌ Erro ao emitir usuários online:', error);
+      console.error("❌ Erro ao emitir usuários online:", error);
     }
   }
 
   @SubscribeMessage(CLIENT_EVENTS.SEND_MESSAGE)
   async handleSendMessage(
     @MessageBody() data: MessageData,
-    @ConnectedSocket() client: TypedSocket,
+    @ConnectedSocket() client: TypedSocket
   ): Promise<void> {
     const { userId } = client.data.user;
 
@@ -171,7 +177,7 @@ export class ChatGateway
   @SubscribeMessage(CLIENT_EVENTS.LEAVE_ROOM)
   async handleLeave(
     @MessageBody() data: RoomData,
-    @ConnectedSocket() client: TypedSocket,
+    @ConnectedSocket() client: TypedSocket
   ): Promise<void> {
     const { roomId } = data;
     const { userId, username } = client.data.user;
@@ -199,7 +205,7 @@ export class ChatGateway
 
   async handleDisconnect(client: TypedSocket): Promise<void> {
     if (!client.data?.user) {
-      console.warn('❌ Desconexão de socket anônimo.');
+      console.warn("❌ Desconexão de socket anônimo.");
       return;
     }
 
@@ -207,14 +213,14 @@ export class ChatGateway
     const currentRoomId = client.data.currentRoomId;
 
     console.log(
-      `🔌 Iniciando desconexão do usuário ${username} (socket: ${client.id})`,
+      `🔌 Iniciando desconexão do usuário ${username} (socket: ${client.id})`
     );
 
     if (currentRoomId) {
       await this.redisService.removeUserFromRoom(
         currentRoomId,
         userId,
-        client.id,
+        client.id
       );
 
       const userLeftData: UserLeftRoomData = {
@@ -276,7 +282,7 @@ export class ChatGateway
 
   emitMessageEdited(
     roomId: string,
-    updatedMessage: MessageWithRelations,
+    updatedMessage: MessageWithRelations
   ): void {
     this.server.to(roomId).emit(SERVER_EVENTS.MESSAGE_EDITED, updatedMessage);
   }
@@ -292,7 +298,7 @@ export class ChatGateway
       const onlineCountData: OnlineCountData = { roomId, count };
       this.server.to(roomId).emit(SERVER_EVENTS.ONLINE_COUNT, onlineCountData);
     } catch (error) {
-      console.error('❌ Erro ao emitir contagem online:', error);
+      console.error("❌ Erro ao emitir contagem online:", error);
     }
   }
 

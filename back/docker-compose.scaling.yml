@@ -15,11 +15,11 @@ services:
       POSTGRES_CHECKPOINT_COMPLETION_TARGET: 0.9
       POSTGRES_RANDOM_PAGE_COST: 1.1
     ports:
-      - '5434:5432'
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U chatapi_user -d chatapi']
+      test: ["CMD-SHELL", "pg_isready -U chatapi_user -d chatapi"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,10 +40,10 @@ services:
     image: redis:7-alpine
     container_name: chat-api-redis-scaling
     ports:
-      - '6381:6379'
-    command: redis-server --maxmemory 1gb --maxmemory-policy allkeys-lru --save "" --maxclients 10000 --tcp-keepalive 300 --timeout 300
+      - "6381:6379"
+    command: redis-server --maxmemory 1gb --maxmemory-policy noeviction --save "" --maxclients 10000 --tcp-keepalive 300 --timeout 300
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,11 +66,11 @@ services:
       dockerfile: Dockerfile.migrations
     container_name: chat-api-migrations
     environment:
-      DATABASE_URL: 'postgresql://chatapi_user:testpassword123@postgres:5432/chatapi'
+      DATABASE_URL: "postgresql://chatapi_user:testpassword123@postgres:5432/chatapi"
     depends_on:
       postgres:
         condition: service_healthy
-    restart: 'no'
+    restart: "no"
     networks:
       - chat-api-scaling-network
 
@@ -78,21 +78,21 @@ services:
     build: .
     container_name: chat-api-1
     ports:
-      - '3001:3000'
+      - "3001:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: 'postgresql://chatapi_user:testpassword123@postgres:5432/chatapi'
+      DATABASE_URL: "postgresql://chatapi_user:testpassword123@postgres:5432/chatapi"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: 'test-jwt-secret'
-      NODE_OPTIONS: '--max-old-space-size=2048 --max-http-header-size=80000'
+      JWT_SECRET: "test-jwt-secret"
+      NODE_OPTIONS: "--max-old-space-size=2048 --max-http-header-size=80000"
       UV_THREADPOOL_SIZE: 128
-      S3_REGION: 'us-east-1'
-      S3_ACCESS_KEY: 'test-key'
-      S3_SECRET_KEY: 'test-secret'
-      S3_BUCKET: 'test-bucket'
-      S3_ENDPOINT: 'http://localhost:9000'
+      S3_REGION: "us-east-1"
+      S3_ACCESS_KEY: "test-key"
+      S3_SECRET_KEY: "test-secret"
+      S3_BUCKET: "test-bucket"
+      S3_ENDPOINT: "http://localhost:9000"
     depends_on:
       db-migrations:
         condition: service_completed_successfully
@@ -116,19 +116,19 @@ services:
     build: .
     container_name: chat-api-2
     ports:
-      - '3002:3000'
+      - "3002:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: 'postgresql://chatapi_user:testpassword123@postgres:5432/chatapi'
+      DATABASE_URL: "postgresql://chatapi_user:testpassword123@postgres:5432/chatapi"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: 'test-jwt-secret'
-      S3_REGION: 'us-east-1'
-      S3_ACCESS_KEY: 'test-key'
-      S3_SECRET_KEY: 'test-secret'
-      S3_BUCKET: 'test-bucket'
-      S3_ENDPOINT: 'http://localhost:9000'
+      JWT_SECRET: "test-jwt-secret"
+      S3_REGION: "us-east-1"
+      S3_ACCESS_KEY: "test-key"
+      S3_SECRET_KEY: "test-secret"
+      S3_BUCKET: "test-bucket"
+      S3_ENDPOINT: "http://localhost:9000"
     depends_on:
       db-migrations:
         condition: service_completed_successfully
@@ -142,19 +142,19 @@ services:
     build: .
     container_name: chat-api-3
     ports:
-      - '3003:3000'
+      - "3003:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: 'postgresql://chatapi_user:testpassword123@postgres:5432/chatapi'
+      DATABASE_URL: "postgresql://chatapi_user:testpassword123@postgres:5432/chatapi"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: 'test-jwt-secret'
-      S3_REGION: 'us-east-1'
-      S3_ACCESS_KEY: 'test-key'
-      S3_SECRET_KEY: 'test-secret'
-      S3_BUCKET: 'test-bucket'
-      S3_ENDPOINT: 'http://localhost:9000'
+      JWT_SECRET: "test-jwt-secret"
+      S3_REGION: "us-east-1"
+      S3_ACCESS_KEY: "test-key"
+      S3_SECRET_KEY: "test-secret"
+      S3_BUCKET: "test-bucket"
+      S3_ENDPOINT: "http://localhost:9000"
     depends_on:
       db-migrations:
         condition: service_completed_successfully
@@ -168,19 +168,19 @@ services:
     build: .
     container_name: chat-api-4
     ports:
-      - '3004:3000'
+      - "3004:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: 'postgresql://chatapi_user:testpassword123@postgres:5432/chatapi'
+      DATABASE_URL: "postgresql://chatapi_user:testpassword123@postgres:5432/chatapi"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      JWT_SECRET: 'test-jwt-secret'
-      S3_REGION: 'us-east-1'
-      S3_ACCESS_KEY: 'test-key'
-      S3_SECRET_KEY: 'test-secret'
-      S3_BUCKET: 'test-bucket'
-      S3_ENDPOINT: 'http://localhost:9000'
+      JWT_SECRET: "test-jwt-secret"
+      S3_REGION: "us-east-1"
+      S3_ACCESS_KEY: "test-key"
+      S3_SECRET_KEY: "test-secret"
+      S3_BUCKET: "test-bucket"
+      S3_ENDPOINT: "http://localhost:9000"
     depends_on:
       db-migrations:
         condition: service_completed_successfully
@@ -194,8 +194,8 @@ services:
     image: haproxy:2.8-alpine
     container_name: chat-api-loadbalancer
     ports:
-      - '8080:80'
-      - '8404:8404'
+      - "8080:80"
+      - "8404:8404"
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:

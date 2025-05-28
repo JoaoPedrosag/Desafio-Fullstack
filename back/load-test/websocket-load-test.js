@@ -1,12 +1,13 @@
-const { io } = require('socket.io-client');
-const os = require('os');
-const https = require('https');
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+const { io } = require("socket.io-client");
+const os = require("os");
+const https = require("https");
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
 
 class WebSocketLoadTest {
-  constructor(serverUrl = 'http://localhost:3000') {
+  constructor(serverUrl = "http://localhost:3000") {
+    console.log("🚀 Iniciando teste de carga com o servidor:", serverUrl);
     this.serverUrl = serverUrl;
     this.clients = [];
     this.messageTimestamps = new Map();
@@ -32,11 +33,11 @@ class WebSocketLoadTest {
     const url = new URL(path, this.serverUrl);
     const options = {
       hostname: url.hostname,
-      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      port: url.port || (url.protocol === "https:" ? 443 : 80),
       path: url.pathname,
       method: method,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     };
 
@@ -44,26 +45,26 @@ class WebSocketLoadTest {
       options.headers.Authorization = `Bearer ${authToken}`;
     }
 
-    const client = url.protocol === 'https:' ? https : http;
+    const client = url.protocol === "https:" ? https : http;
 
     return new Promise((resolve, reject) => {
       const req = client.request(options, (res) => {
-        let responseData = '';
+        let responseData = "";
 
-        res.on('data', (chunk) => {
+        res.on("data", (chunk) => {
           responseData += chunk;
         });
 
-        res.on('end', () => {
+        res.on("end", () => {
           try {
             let token = null;
-            const cookies = res.headers['set-cookie'];
+            const cookies = res.headers["set-cookie"];
             if (cookies) {
               const tokenCookie = cookies.find((cookie) =>
-                cookie.includes('accessToken='),
+                cookie.includes("accessToken=")
               );
               if (tokenCookie) {
-                token = tokenCookie.split('accessToken=')[1].split(';')[0];
+                token = tokenCookie.split("accessToken=")[1].split(";")[0];
               }
             }
 
@@ -87,13 +88,13 @@ class WebSocketLoadTest {
         });
       });
 
-      req.on('error', (error) => {
+      req.on("error", (error) => {
         reject(error);
       });
 
-      req.on('timeout', () => {
+      req.on("timeout", () => {
         req.destroy();
-        reject(new Error('Request timeout'));
+        reject(new Error("Request timeout"));
       });
 
       req.setTimeout(10000);
@@ -111,10 +112,10 @@ class WebSocketLoadTest {
       const userData = {
         username: username,
         email: email,
-        password: 'teste123',
+        password: "teste123",
       };
 
-      await this.makeHttpRequest('POST', '/auth/register', userData);
+      await this.makeHttpRequest("POST", "/auth/register", userData);
       console.log(`👤 Usuário ${username} criado no banco de dados`);
       this.metrics.usersCreated++;
 
@@ -127,14 +128,14 @@ class WebSocketLoadTest {
       return { success: true, userData };
     } catch (error) {
       if (
-        error.message.includes('Email está em uso') ||
-        error.message.includes('E-mail já está em uso')
+        error.message.includes("Email está em uso") ||
+        error.message.includes("E-mail já está em uso")
       ) {
         console.log(`📧 Email ${email} já existe, usuário será reutilizado`);
         this.createdUsers.set(userId, {
           username,
           email,
-          password: 'teste123',
+          password: "teste123",
           id: userId,
           dbEmail: email,
           userExists: true,
@@ -147,13 +148,13 @@ class WebSocketLoadTest {
     }
   }
 
-  async loginUser(email, password = 'teste123') {
+  async loginUser(email, password = "teste123") {
     try {
       const loginData = { email, password };
       const response = await this.makeHttpRequest(
-        'POST',
-        '/auth/login',
-        loginData,
+        "POST",
+        "/auth/login",
+        loginData
       );
 
       if (response.token) {
@@ -172,10 +173,10 @@ class WebSocketLoadTest {
   async getUserData(token) {
     try {
       const response = await this.makeHttpRequest(
-        'GET',
-        '/auth/me',
+        "GET",
+        "/auth/me",
         null,
-        token,
+        token
       );
       return response.data;
     } catch (error) {
@@ -188,14 +189,14 @@ class WebSocketLoadTest {
     try {
       const roomData = { name: roomName };
       const response = await this.makeHttpRequest(
-        'POST',
-        '/rooms',
+        "POST",
+        "/rooms",
         roomData,
-        authToken,
+        authToken
       );
 
       console.log(
-        `🏠 Sala ${roomName} criada no banco de dados (ID: ${response.data.id})`,
+        `🏠 Sala ${roomName} criada no banco de dados (ID: ${response.data.id})`
       );
       this.metrics.roomsCreated++;
       this.createdRooms.set(roomName, response.data);
@@ -209,10 +210,10 @@ class WebSocketLoadTest {
   async joinRoomViaAPI(roomId, userId, authToken) {
     try {
       await this.makeHttpRequest(
-        'POST',
+        "POST",
         `/rooms/${roomId}/join`,
         { userId },
-        authToken,
+        authToken
       );
       console.log(`👥 Usuário ${userId} entrou na sala ${roomId} via API`);
       return { success: true };
@@ -230,7 +231,7 @@ class WebSocketLoadTest {
         const userCreationResult = await this.createRealUser(
           userId,
           username,
-          email,
+          email
         );
 
         if (!userCreationResult || !userCreationResult.success) {
@@ -238,7 +239,7 @@ class WebSocketLoadTest {
             id: userId,
             username: username,
             email: email,
-            token: 'mock-token',
+            token: "mock-token",
             isMock: true,
             isRealUser: false,
             realUserId: null,
@@ -249,7 +250,7 @@ class WebSocketLoadTest {
           this.clients.push(mockClientData);
           this.metrics.errors++;
           console.log(
-            `⚠️  Cliente ${username} criado como mock (falha na API)`,
+            `⚠️  Cliente ${username} criado como mock (falha na API)`
           );
           return resolve(mockClientData);
         }
@@ -262,7 +263,7 @@ class WebSocketLoadTest {
             id: userId,
             username: username,
             email: email,
-            token: 'mock-token',
+            token: "mock-token",
             isMock: true,
             isRealUser: false,
             realUserId: null,
@@ -281,7 +282,7 @@ class WebSocketLoadTest {
         const realUserId = realUserData ? realUserData.id : userId;
 
         console.log(
-          `✅ Usuário real autenticado: ${username} - ID real: ${realUserId}`,
+          `✅ Usuário real autenticado: ${username} - ID real: ${realUserId}`
         );
 
         const connectionTimeout = 20000;
@@ -295,6 +296,7 @@ class WebSocketLoadTest {
           reconnection: false,
           timeout: connectionTimeout,
           forceNew: true,
+          transports: ["websocket"],
         });
 
         timeoutId = setTimeout(() => {
@@ -323,7 +325,7 @@ class WebSocketLoadTest {
           }
         }, connectionTimeout);
 
-        client.on('connect', () => {
+        client.on("connect", () => {
           if (!isResolved) {
             isResolved = true;
             clearTimeout(timeoutId);
@@ -345,7 +347,7 @@ class WebSocketLoadTest {
               currentRoomId: null,
             };
 
-            client.on('newMessage', (data) => {
+            client.on("newMessage", (data) => {
               clientData.messagesReceived++;
               this.metrics.messagesReceived++;
 
@@ -358,12 +360,12 @@ class WebSocketLoadTest {
               }
             });
 
-            client.on('disconnect', () => {
+            client.on("disconnect", () => {
               this.metrics.disconnected++;
               console.log(`❌ Cliente ${username} desconectado`);
             });
 
-            client.on('connect_error', (error) => {
+            client.on("connect_error", (error) => {
               if (!isResolved) {
                 isResolved = true;
                 clearTimeout(timeoutId);
@@ -399,7 +401,7 @@ class WebSocketLoadTest {
           id: userId,
           username: username,
           email: `${username.toLowerCase()}@test.com`,
-          token: 'error-token',
+          token: "error-token",
           isMock: true,
           isRealUser: false,
           realUserId: null,
@@ -415,11 +417,11 @@ class WebSocketLoadTest {
 
   async connectClients(numberOfClients) {
     console.log(
-      `🚀 Iniciando conexão de ${numberOfClients} clientes com escalonamento...`,
+      `🚀 Iniciando conexão de ${numberOfClients} clientes com escalonamento...`
     );
 
-    const BATCH_SIZE = 20;
-    const BATCH_DELAY = 500;
+    const BATCH_SIZE = 100;
+    const BATCH_DELAY = 3000;
 
     this.clients = [];
 
@@ -432,7 +434,7 @@ class WebSocketLoadTest {
       const endIndex = Math.min(startIndex + BATCH_SIZE, numberOfClients);
 
       console.log(
-        `📦 Conectando batch ${batch + 1}: usuários ${startIndex + 1}-${endIndex}`,
+        `📦 Conectando batch ${batch + 1}: usuários ${startIndex + 1}-${endIndex}`
       );
 
       const batchPromises = [];
@@ -462,14 +464,14 @@ class WebSocketLoadTest {
 
   async simulateJoinRooms(
     clients,
-    roomNames = ['test-room-1', 'test-room-2', 'test-room-3'],
+    roomNames = ["test-room-1", "test-room-2", "test-room-3"]
   ) {
     console.log(
-      `🏠 Simulando criação e entrada em ${roomNames.length} salas...`,
+      `🏠 Simulando criação e entrada em ${roomNames.length} salas...`
     );
 
     const validClients = clients.filter(
-      (c) => !c.isMock && c.token && c.client.connected,
+      (c) => !c.isMock && c.token && c.client.connected
     );
 
     if (validClients.length === 0) {
@@ -488,7 +490,7 @@ class WebSocketLoadTest {
           await this.joinRoomViaAPI(
             room.id,
             creatorClient.realUserId,
-            creatorClient.token,
+            creatorClient.token
           );
         }
       } catch (error) {
@@ -497,7 +499,7 @@ class WebSocketLoadTest {
     }
 
     const roomIds = Array.from(this.createdRooms.values()).map(
-      (room) => room.id,
+      (room) => room.id
     );
 
     for (let i = 0; i < validClients.length; i++) {
@@ -511,15 +513,15 @@ class WebSocketLoadTest {
           await this.joinRoomViaAPI(roomId, client.realUserId, client.token);
         }
 
-        client.client.emit('joinRoom', roomId);
+        client.client.emit("joinRoom", roomId);
         client.currentRoomId = roomId;
 
         console.log(
-          `👥 ${client.username} entrou na sala ${roomName} (${roomId})`,
+          `👥 ${client.username} entrou na sala ${roomName} (${roomId})`
         );
       } catch (error) {
         console.warn(
-          `⚠️ Erro ao adicionar ${client.username} à sala ${roomName}: ${error.message}`,
+          `⚠️ Erro ao adicionar ${client.username} à sala ${roomName}: ${error.message}`
         );
       }
     }
@@ -530,12 +532,12 @@ class WebSocketLoadTest {
 
   async simulateMessages(clients, messagesPerClient = 3) {
     console.log(
-      `📨 Iniciando simulação de ${messagesPerClient} mensagens por cliente...`,
+      `📨 Iniciando simulação de ${messagesPerClient} mensagens por cliente...`
     );
     this.metrics.startTime = Date.now();
 
     const validClients = clients.filter(
-      (c) => !c.isMock && c.client.connected && c.currentRoomId,
+      (c) => !c.isMock && c.client.connected && c.currentRoomId
     );
 
     if (validClients.length === 0) {
@@ -559,19 +561,19 @@ class WebSocketLoadTest {
               const messageKey = `${clientData.realUserId}-${messageContent}`;
               this.messageTimestamps.set(messageKey, Date.now());
 
-              clientData.client.emit('sendMessage', messageData);
+              clientData.client.emit("sendMessage", messageData);
               clientData.messagesSent++;
               this.metrics.messagesSent++;
 
               if (this.metrics.messagesSent % 5 === 0) {
                 console.log(
-                  `📊 ${this.metrics.messagesSent} mensagens enviadas...`,
+                  `📊 ${this.metrics.messagesSent} mensagens enviadas...`
                 );
               }
 
               resolve();
             },
-            Math.random() * 3000 + i * 1000,
+            Math.random() * 3000 + i * 1000
           );
         });
 
@@ -581,7 +583,7 @@ class WebSocketLoadTest {
 
     await Promise.all(promises);
     console.log(
-      `✅ Todas as ${this.metrics.messagesSent} mensagens foram enviadas!`,
+      `✅ Todas as ${this.metrics.messagesSent} mensagens foram enviadas!`
     );
 
     console.log(`⏳ Aguardando processamento das mensagens...`);
@@ -590,7 +592,7 @@ class WebSocketLoadTest {
     this.metrics.endTime = Date.now();
   }
 
-  async showStats() {
+  async showStats(numberOfClients) {
     const duration = this.metrics.endTime - this.metrics.startTime;
     const durationSeconds = duration / 1000;
     const messagesPerSecond = this.metrics.messagesSent / durationSeconds;
@@ -604,13 +606,12 @@ class WebSocketLoadTest {
     const realUsers = this.clients.filter((c) => c.isRealUser).length;
     const integrationLevel =
       this.metrics.usersCreated > 0
-        ? 'full-database-integration'
-        : 'websocket-only';
+        ? "full-database-integration"
+        : "websocket-only";
 
-    const totalAttempts = this.clients.length;
+    const totalAttempts = numberOfClients;
     const successfulConnections = this.metrics.connected;
-    const successRate =
-      totalAttempts > 0 ? (successfulConnections / totalAttempts) * 100 : 0;
+    const successRate = (successfulConnections / totalAttempts) * 100;
 
     console.log(`
 ╔══════════════════════════════════════════════════════════════╗
@@ -693,7 +694,7 @@ class WebSocketLoadTest {
 
       await this.simulateMessages(clients, messagesPerClient);
 
-      const stats = await this.showStats();
+      const stats = await this.showStats(numberOfClients);
 
       await this.cleanup();
 
@@ -706,8 +707,8 @@ class WebSocketLoadTest {
   }
 
   async generateReport(stats) {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const reportDir = path.join(__dirname, 'reports');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const reportDir = path.join(__dirname, "reports");
 
     if (!fs.existsSync(reportDir)) {
       fs.mkdirSync(reportDir, { recursive: true });
@@ -715,7 +716,7 @@ class WebSocketLoadTest {
 
     const reportPath = path.join(
       reportDir,
-      `load-test-report-${timestamp}.html`,
+      `load-test-report-${timestamp}.html`
     );
 
     const html = `
@@ -756,7 +757,7 @@ class WebSocketLoadTest {
         <div class="header">
             <h1 class="title">🚀 Relatório de Teste de Carga</h1>
             <p class="subtitle">Chat API - Teste de WebSocket com Integração Completa</p>
-            <p style="margin-top: 10px; opacity: 0.8;">Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
         </div>
 
         <div class="grid">
@@ -788,22 +789,22 @@ class WebSocketLoadTest {
                 <h3>⚡ Performance</h3>
                 <div class="metric">
                     <span class="metric-label">Latência Média:</span>
-                    <span class="metric-value ${stats.avgLatency > 100 ? 'warning' : 'success'}">${stats.avgLatency.toFixed(2)}ms</span>
+                    <span class="metric-value ${stats.avgLatency > 100 ? "warning" : "success"}">${stats.avgLatency.toFixed(2)}ms</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Taxa de Sucesso:</span>
-                    <span class="metric-value ${stats.successRate > 90 ? 'success' : stats.successRate > 70 ? 'warning' : 'error'}">${stats.successRate.toFixed(1)}%</span>
+                    <span class="metric-value ${stats.successRate > 90 ? "success" : stats.successRate > 70 ? "warning" : "error"}">${stats.successRate.toFixed(1)}%</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${stats.successRate}%"></div>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Timeouts:</span>
-                    <span class="metric-value ${stats.timeouts > 0 ? 'warning' : 'success'}">${stats.timeouts}</span>
+                    <span class="metric-value ${stats.timeouts > 0 ? "warning" : "success"}">${stats.timeouts}</span>
                 </div>
                 <div class="metric">
                     <span class="metric-label">Erros:</span>
-                    <span class="metric-value ${stats.errors > 0 ? 'error' : 'success'}">${stats.errors}</span>
+                    <span class="metric-value ${stats.errors > 0 ? "error" : "success"}">${stats.errors}</span>
                 </div>
             </div>
 
@@ -823,8 +824,8 @@ class WebSocketLoadTest {
                 </div>
                 <div class="metric">
                     <span class="metric-label">Status Geral:</span>
-                    <span class="${stats.successRate > 90 ? 'status-good' : stats.successRate > 70 ? 'status-warning' : 'status-error'}">
-                        ${stats.successRate > 90 ? 'EXCELENTE' : stats.successRate > 70 ? 'BOM' : 'NECESSITA ATENÇÃO'}
+                    <span class="${stats.successRate > 90 ? "status-good" : stats.successRate > 70 ? "status-warning" : "status-error"}">
+                        ${stats.successRate > 90 ? "EXCELENTE" : stats.successRate > 70 ? "BOM" : "NECESSITA ATENÇÃO"}
                     </span>
                 </div>
             </div>
@@ -870,11 +871,11 @@ class WebSocketLoadTest {
 
     const markdownPath = path.join(
       reportDir,
-      `load-test-report-${timestamp}.md`,
+      `load-test-report-${timestamp}.md`
     );
     const markdown = `# 🚀 Relatório de Teste de Carga - Chat API
 
-**Data:** ${new Date().toLocaleString('pt-BR')}  
+**Data:** ${new Date().toLocaleString("pt-BR")}  
 **Servidor:** ${this.serverUrl}
 
 ## 📊 Estatísticas Gerais
@@ -914,7 +915,7 @@ class WebSocketLoadTest {
 
 **Fluxo Testado:** Registro → Login → Criação sala → WebSocket → Mensagens → Bull Queue → PostgreSQL
 
-**Status:** ${stats.successRate > 90 ? '✅ EXCELENTE' : stats.successRate > 70 ? '⚠️ BOM' : '❌ NECESSITA ATENÇÃO'}
+**Status:** ${stats.successRate > 90 ? "✅ EXCELENTE" : stats.successRate > 70 ? "⚠️ BOM" : "❌ NECESSITA ATENÇÃO"}
 `;
 
     fs.writeFileSync(markdownPath, markdown);
@@ -927,7 +928,7 @@ class WebSocketLoadTest {
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-  let serverUrl = 'http://localhost:3000';
+  let serverUrl = "http://localhost:3000";
   let clients = 10;
   let messages = 2;
   let duration = null;
@@ -935,16 +936,16 @@ if (require.main === module) {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg === '--url' && args[i + 1]) {
+    if (arg === "--url" && args[i + 1]) {
       serverUrl = args[i + 1];
       i++;
-    } else if (arg === '--users' && args[i + 1]) {
+    } else if (arg === "--users" && args[i + 1]) {
       clients = parseInt(args[i + 1]);
       i++;
-    } else if (arg === '--duration' && args[i + 1]) {
+    } else if (arg === "--duration" && args[i + 1]) {
       duration = parseInt(args[i + 1]);
       i++;
-    } else if (!arg.startsWith('--') && !isNaN(arg)) {
+    } else if (!arg.startsWith("--") && !isNaN(arg)) {
       if (!clients || clients === 10) {
         clients = parseInt(arg);
       } else if (!messages || messages === 2) {
@@ -954,21 +955,21 @@ if (require.main === module) {
   }
 
   const firstArg = args[0];
-  if (firstArg && !firstArg.startsWith('--') && isNaN(firstArg)) {
+  if (firstArg && !firstArg.startsWith("--") && isNaN(firstArg)) {
     switch (firstArg) {
-      case 'light':
+      case "light":
         clients = 10;
         messages = 2;
         break;
-      case 'medium':
+      case "medium":
         clients = 25;
         messages = 5;
         break;
-      case 'heavy':
+      case "heavy":
         clients = 50;
         messages = 10;
         break;
-      case 'extreme':
+      case "extreme":
         clients = 100;
         messages = 20;
         break;
@@ -988,11 +989,11 @@ if (require.main === module) {
   test
     .runLoadTest(clients, messages)
     .then((stats) => {
-      console.log('🎉 Teste concluído com sucesso!');
+      console.log("🎉 Teste concluído com sucesso!");
       process.exit(0);
     })
     .catch((error) => {
-      console.error('💥 Teste falhou:', error.message);
+      console.error("💥 Teste falhou:", error.message);
       process.exit(1);
     });
 }
