@@ -28,27 +28,33 @@ Um sistema de **chat em tempo real** construído com NestJS, usando WebSockets, 
 
 ---
 
-## 🚀 Como iniciar
+## 🚀 Como iniciar localmente
 
-1. **Instale as dependências:**
+1. Acesse a pasta do backend:
+
+```bash
+cd back
+```
+
+2. **Instale as dependências:**
 
 ```bash
 npm install
 ```
 
-2. **Suba os containers com Redis e PostgreSQL:**
+4. **Suba os containers com Redis e PostgreSQL:**
 
 ```bash
 docker-compose up -d
 ```
 
-3. **Rode as migrações do Prisma:**
+4. **Rode as migrações do Prisma:**
 
 ```bash
 npx prisma migrate dev
 ```
 
-4. **Inicie o servidor em modo desenvolvimento:**
+5. **Inicie o servidor em modo desenvolvimento:**
 
 ```bash
 npm run start:dev
@@ -157,31 +163,37 @@ O frontend do projeto foi desenvolvido com **React**, com integração completa 
 
 ### 🚀 Como iniciar o frontend localmente
 
-1. Acesse o diretório do frontend:
+1. Acesse a pasta do frontend:
+
+```bash
+cd front
+```
+
+2. Acesse o diretório do frontend:
 
 ```bash
 cd frontend
 ```
 
-2. Instale as dependências:
+3. Instale as dependências:
 
 ```bash
 npm install
 ```
 
-3. Copie o arquivo de variáveis de ambiente:
+4. Copie o arquivo de variáveis de ambiente:
 
 ```bash
 cp .env.example .env
 ```
 
-4. Configure a variável `VITE_API_BASE_URL` no `.env` com o endereço da API:
+5. Configure a variável `VITE_API_BASE_URL` no `.env` com o endereço da API:
 
 ```
 VITE_API_BASE_URL=http://localhost:3000
 ```
 
-5. Para gerar o build de produção:
+6. Para gerar o build de produção:
 
 ```bash
 npm run build
