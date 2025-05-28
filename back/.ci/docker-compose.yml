@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: 'bitnami/postgresql:latest'
+    container_name: postgresql_chat
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=8a8640e33f39498798b1b21b8a56cc62
+      - POSTGRESQL_DATABASE=chat
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/bitnami/postgresql
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis_chat
+    ports:
+      - '6379:6379'
+    networks:
+      - backend-network
+
+  app:
+    image: jhoni1471/nest-js:latest
+    container_name: nest_chat_app
+    env_file:
+      - .env
+    depends_on:
+      - postgresql
+      - redis
+    networks:
+      - backend-network
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    depends_on:
+      - app
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/origin-cf.crt:/etc/ssl/certs/origin-cf.crt:ro
+      - ./nginx/origin-cf.key:/etc/ssl/private/origin-cf.key:ro
+    networks:
+      - backend-network
+
+volumes:
+  pgdata:
+
+networks:
+  backend-network:

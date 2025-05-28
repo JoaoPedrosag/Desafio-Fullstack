@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String         @id @default(uuid())
+  username   String
+  email      String         @unique
+  password   String
+  createdAt  DateTime       @default(now()) @map("created_at")
+  messages   Message[]
+  rooms      UserRoom[]
+  reads      UserRoomRead[]
+  storages   Storage[]
+
+  @@map("users")
+}
+
+model Room {
+  id         String         @id @default(uuid())
+  name       String
+  createdAt  DateTime       @default(now()) @map("created_at")
+  messages   Message[]
+  users      UserRoom[]
+  reads      UserRoomRead[]
+  storages   Storage[]
+
+  @@map("rooms")
+}
+
+model UserRoom {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    String   @map("room_id")
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  @@unique([userId, roomId])
+  @@map("user_rooms")
+}
+
+model Message {
+  id         String    @id @default(uuid())
+  content    String
+  storageId  String?   @map("storage_id")
+  storage    Storage?  @relation(fields: [storageId], references: [id])
+  userId     String    @map("user_id")
+  roomId     String    @map("room_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  room       Room      @relation(fields: [roomId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+
+  edited     Boolean   @default(false) @map("edited")
+  editedAt   DateTime? @map("edited_at")
+
+  @@index([roomId])
+  @@map("messages")
+}
+
+model UserRoomRead {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  roomId    String   @map("room_id")
+  lastRead  DateTime @map("last_read")
+
+  user      User     @relation(fields: [userId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
+
+  @@unique([userId, roomId])
+  @@map("user_room_reads")
+}
+
+model Storage {
+  id           String     @id @default(uuid())
+  key          String     @unique
+  filename     String
+  url          String
+  originalName String     @map("original_name")
+  mimetype     String
+  expiresAt    DateTime   @map("expires_at")
+  uploadedAt   DateTime   @default(now()) @map("uploaded_at")
+
+  userId       String     @map("user_id")
+  user         User       @relation(fields: [userId], references: [id])
+
+  roomId       String?    @map("room_id")
+  room         Room?      @relation(fields: [roomId], references: [id])
+  messages     Message[]
+
+  @@map("storage")
+}

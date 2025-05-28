@@ -1,0 +1,14 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY prisma ./prisma/
+
+RUN npm ci --only=production && npm cache clean --force
+
+RUN npx prisma generate
+
+CMD echo "🚀 Executando migrações do banco de dados..." && \
+    npx prisma migrate deploy && \
+    echo "✅ Migrações concluídas com sucesso!" 

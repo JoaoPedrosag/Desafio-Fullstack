@@ -1,0 +1,26 @@
+services:
+  postgresql:
+    image: 'bitnami/postgresql:latest'
+    container_name: postgresql_chat
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=8a8640e33f39498798b1b21b8a56cc62
+      - POSTGRESQL_DATABASE=chat
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/bitnami/postgresql
+    networks:
+      - backend-network
+  redis:
+    image: redis:alpine
+    ports:
+      - '6379:6379'
+    networks:
+      - backend-network
+
+volumes:
+  pgdata:
+
+networks:
+  backend-network:

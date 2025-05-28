@@ -1,0 +1,15 @@
+export const SOCKET_EVENTS = {
+  JOIN_ROOM: "joinRoom",
+  LEAVE_ROOM: "leaveRoom",
+  NEW_MESSAGE: "newMessage",
+  MESSAGE_EDITED: "messageEdited",
+  MESSAGE_DELETED: "messageDeleted",
+  ONLINE_USERS: "onlineUsers",
+  ONLINE_COUNT: "onlineCount",
+  USER_LEFT_ROOM: "userLeftRoom",
+  SEND_MESSAGE: "sendMessage",
+  NEW_ROOM: "newRoom",
+  ROOM_NOTIFICATION: "roomNotification",
+  USER_IS_TYPING: "userIsTyping",
+  USER_TYPING: "userTyping",
+} as const;

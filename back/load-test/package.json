@@ -1,0 +1,31 @@
+{
+  "name": "chat-api-load-tests",
+  "version": "2.0.0",
+  "description": "Testes de carga integrados para API de Chat com fluxo completo de usuário",
+  "main": "websocket-load-test.js",
+  "scripts": {
+    "test": "node websocket-load-test.js",
+    "test:light": "node websocket-load-test.js 5 3",
+    "test:medium": "node websocket-load-test.js 25 5",
+    "test:heavy": "node websocket-load-test.js 100 10",
+    "test:massive": "node websocket-load-test.js 500 3",
+    "test:stress": "node websocket-load-test.js 1000 2"
+  },
+  "keywords": [
+    "load-testing",
+    "websocket",
+    "integration-testing",
+    "chat",
+    "api",
+    "bull-queue",
+    "real-users"
+  ],
+  "author": "Chat API Team",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io-client": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
