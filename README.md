@@ -169,32 +169,32 @@ O frontend do projeto foi desenvolvido com **React**, com integração completa 
 cd front
 ```
 
-2. Acesse o diretório do frontend:
-
-```bash
-cd frontend
-```
-
-3. Instale as dependências:
+2. Instale as dependências:
 
 ```bash
 npm install
 ```
 
-4. Copie o arquivo de variáveis de ambiente:
+3. Copie o arquivo de variáveis de ambiente:
 
 ```bash
-cp .env.example .env
+cp .env-example .env
 ```
 
-5. Configure a variável `VITE_API_BASE_URL` no `.env` com o endereço da API:
+4. Configure a variável `VITE_API_BASE_URL` no `.env` com o endereço da API:
 
 ```
 VITE_API_BASE_URL=http://localhost:3000
 ```
 
-6. Para gerar o build de produção:
+5. Para gerar o build de produção:
 
 ```bash
 npm run build
+```
+
+5. Para iniciar o projeto localmente:
+
+```bash
+npm run preview
 ```

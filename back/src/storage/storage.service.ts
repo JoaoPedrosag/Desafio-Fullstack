@@ -3,14 +3,14 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
-} from '@aws-sdk/client-s3';
-import { Injectable } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { PrismaService } from 'src/prisma/prisma.service';
-import * as fs from 'fs';
-import * as path from 'path';
-import { appConfig } from '../core/config/app.config';
+} from "@aws-sdk/client-s3";
+import { Injectable } from "@nestjs/common";
+import { v4 as uuid } from "uuid";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { PrismaService } from "src/prisma/prisma.service";
+import * as fs from "fs";
+import * as path from "path";
+import { appConfig } from "../core/config/app.config";
 
 @Injectable()
 export class StorageService {
@@ -20,15 +20,17 @@ export class StorageService {
   constructor(private prisma: PrismaService) {
     this.bucket = appConfig.s3.bucket;
 
-    this.s3 = new S3Client({
-      region: appConfig.s3.region,
-      endpoint: appConfig.s3.endpoint,
-      credentials: {
-        accessKeyId: appConfig.s3.accessKey,
-        secretAccessKey: appConfig.s3.secretKey,
-      },
-      forcePathStyle: true,
-    });
+    if (this.shouldSign()) {
+      this.s3 = new S3Client({
+        region: appConfig.s3.region,
+        endpoint: appConfig.s3.endpoint,
+        credentials: {
+          accessKeyId: appConfig.s3.accessKey,
+          secretAccessKey: appConfig.s3.secretKey,
+        },
+        forcePathStyle: true,
+      });
+    }
   }
 
   shouldSign(): boolean {
@@ -40,7 +42,7 @@ export class StorageService {
     mimetype: string,
     originalName: string,
     userId: string,
-    roomId: string,
+    roomId: string
   ): Promise<{ id: string; key: string; url: string }> {
     const filename = uuid();
     const extension = path.extname(originalName);
@@ -68,7 +70,7 @@ export class StorageService {
         expiresIn,
         userId,
         roomId,
-        url,
+        url
       );
     } else {
       await this.s3.send(
@@ -77,7 +79,7 @@ export class StorageService {
           Key: key,
           Body: buffer,
           ContentType: mimetype,
-        }),
+        })
       );
       url = await this.generatePresignedUrl(key, expiresIn);
     }
@@ -108,7 +110,7 @@ export class StorageService {
     expiresIn: number,
     userId: string,
     roomId: string,
-    url: string,
+    url: string
   ) {
     const storage = await this.saveStorage({
       key,
@@ -144,7 +146,7 @@ export class StorageService {
 
   async generatePresignedUrl(
     key: string,
-    expiresInSeconds = 300,
+    expiresInSeconds = 300
   ): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
@@ -161,7 +163,7 @@ export class StorageService {
       new DeleteObjectCommand({
         Bucket: this.bucket,
         Key: key,
-      }),
+      })
     );
   }
 }
