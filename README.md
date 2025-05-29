@@ -11,6 +11,7 @@ Um sistema de **chat em tempo real** construído com NestJS, usando WebSockets, 
 
 - 🔗 **Frontend (Web App):** [https://www.infinities.info/](https://www.infinities.info/)
 - 📡 **API Backend:** [https://api.infinities.info/](https://api.infinities.info/)
+
 ---
 
 ## ✨ Funcionalidades
@@ -46,13 +47,19 @@ npm install
 docker-compose up -d
 ```
 
-4. Rode as migrações do Prisma:
+4. Copie o arquivo de variáveis de ambiente:
+
+```bash
+cp .env-example .env
+```
+
+5. Rode as migrações do Prisma:
 
 ```bash
 npx prisma migrate dev
 ```
 
-5. Inicie o servidor em modo desenvolvimento:
+6. Inicie o servidor em modo desenvolvimento:
 
 ```bash
 npm run start:dev
@@ -174,8 +181,8 @@ Embora o sistema já suporte múltiplas instâncias backend e balanceamento de c
 - **Índices inteligentes**: Para colunas com filtros e buscas frequentes.
 - **Cache Redis**: Para informações acessadas com frequência, como salas e usuários online.
 - **Arquivamento de mensagens antigas**: Fora do banco (ex: S3 ou Cloudflare R2) para manter performance com dados ativos apenas.
-> 📌 Estas melhorias visam suportar **milhares de usuários simultâneos com baixa latência**, alta disponibilidade e escalabilidade contínua.
-> 
+  > 📌 Estas melhorias visam suportar **milhares de usuários simultâneos com baixa latência**, alta disponibilidade e escalabilidade contínua.
+
 ## 🎨 Frontend (React)
 
 O frontend foi desenvolvido com **React + TypeScript**, utilizando **Chakra UI** como design system para uma interface moderna e responsiva.
@@ -239,6 +246,8 @@ npm run preview
 ```
 
 ---
+
+7.ℹ️ Por padrão, o preview roda na porta 4173. Acesse: http://localhost:4173
 
 ## 🛠️ **Stack Tecnológica**
 
