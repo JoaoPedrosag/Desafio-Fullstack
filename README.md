@@ -36,29 +36,31 @@ Um sistema de **chat em tempo real** construído com NestJS, usando WebSockets, 
 cd back
 ```
 
-2. **Instale as dependências:**
+2. Instale as dependências:
 
 ```bash
 npm install
 ```
 
-4. **Suba os containers com Redis e PostgreSQL:**
+3. Suba os containers com Redis e PostgreSQL:
 
 ```bash
 docker-compose up -d
 ```
 
-4. **Rode as migrações do Prisma:**
+4. Rode as migrações do Prisma:
 
 ```bash
 npx prisma migrate dev
 ```
 
-5. **Inicie o servidor em modo desenvolvimento:**
+5. Inicie o servidor em modo desenvolvimento:
 
 ```bash
 npm run start:dev
 ```
+
+---
 
 ## 🧱 Arquitetura do sistema
 
@@ -100,7 +102,7 @@ npm run start:dev
 
 ## ⚖️ Escalabilidade
 
-Este projeto foi testado com **4 instâncias NestJS** em execução simultaneamente, utilizando **HAProxy** para distribuir a carga.
+O sistema foi testado com **4 instâncias do NestJS executando em paralelo**, com balanceamento de carga via HAProxy.
 
 > ❗️Importante: Esta abordagem é uma **tentativa de escalar horizontalmente** com load balancing. Para produção, o ideal seria utilizar **Kubernetes (K8s)**, que fornece gerenciamento automatizado de escalabilidade, disponibilidade e deploys resilientes.
 
@@ -144,9 +146,27 @@ node websocket-load-test.js --url http://localhost:8080 --users 100
 
 Este comando simula 100 usuários conectando-se ao servidor WebSocket em paralelo para avaliar a estabilidade e performance da aplicação.
 
+### 📊 **Resultados dos Testes**
+
+| Usuários | Latência Média | Taxa de Sucesso | Status       |
+| -------- | -------------- | --------------- | ------------ |
+| 100      | 9ms            | 100%            | ✅ Excelente |
+| 1000     | 2.1s           | 98.2%           | ⚠️ Limitado  |
+
+> 💡 O sistema suportou 1000 usuários simultâneos, mas com média de ~3000ms de latência sob carga.
+
+---
+
 ## 🎨 Frontend (React)
 
-O frontend do projeto foi desenvolvido com **React**, com integração completa ao WebSocket.
+O frontend foi desenvolvido com **React + TypeScript**, utilizando **Chakra UI** como design system para uma interface moderna e responsiva.
+
+### 🛠️ **Tecnologias principais:**
+
+- **Chakra UI** - Components e design system
+- **Socket.IO Client** - Comunicação WebSocket
+- **React Hooks** - Gerenciamento de estado
+- **TypeScript** - Type safety
 
 ### Funcionalidades principais:
 
@@ -193,8 +213,38 @@ VITE_API_BASE_URL=http://localhost:3000
 npm run build
 ```
 
-5. Para iniciar o projeto localmente:
+6. Para iniciar o projeto localmente:
 
 ```bash
 npm run preview
 ```
+
+---
+
+## 🛠️ **Stack Tecnológica**
+
+### Backend
+
+- **NestJS** - Framework Node.js
+- **Socket.IO** - WebSocket real-time
+- **Bull Queue** - Job processing
+- **Redis** - Cache & Pub/Sub
+- **PostgreSQL** - Database
+- **Prisma** - ORM
+- **HAProxy** - Load balancer
+- **JWT** - Authentication
+
+### Frontend
+
+- **React** - UI Framework
+- **TypeScript** - Type safety
+- **Chakra UI** - Component library
+- **Vite** - Build tool
+- **Socket.IO Client** - Real-time connection
+
+### DevOps & Infraestrutura
+
+- **Docker** - Containerization
+- **Cloudflare R2** - File storage (produção)
+- **Load Testing** - Performance validation
+- **HAProxy** - Load balancing
