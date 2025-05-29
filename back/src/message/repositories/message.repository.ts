@@ -1,21 +1,23 @@
-import { Injectable } from "@nestjs/common";
-import { Message, Prisma } from "@prisma/client";
-import { PrismaService } from "../../prisma/prisma.service";
+import { Injectable } from '@nestjs/common';
+import { Message, Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   MessageCreateInput,
   MessageWithUser,
   MessageWithRelations,
   MessageStats,
   MessageSearchFilters,
-} from "../../core/types/message.types";
+} from '../../core/types/message.types';
 
 export interface IMessageRepository {
+  createMessage(data: MessageCreateInput): Promise<MessageWithRelations>;
+  findById(id: string): Promise<Message | null>;
   findWithUser(id: string): Promise<MessageWithUser | null>;
   findWithRelations(id: string): Promise<MessageWithRelations | null>;
   findByRoomId(
     roomId: string,
     limit?: number,
-    cursor?: string
+    cursor?: string,
   ): Promise<MessageWithUser[]>;
   findByUserId(userId: string, limit?: number): Promise<MessageWithUser[]>;
   getMessageStats(): Promise<MessageStats>;
@@ -29,9 +31,33 @@ export interface IMessageRepository {
 export class MessageRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createMessage(data: MessageCreateInput): Promise<Message> {
+  async createMessage(data: MessageCreateInput): Promise<MessageWithRelations> {
     return this.prisma.message.create({
       data,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+        room: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        storage: {
+          select: {
+            id: true,
+            filename: true,
+            originalName: true,
+            url: true,
+            mimetype: true,
+          },
+        },
+      },
     });
   }
 
@@ -88,7 +114,7 @@ export class MessageRepository {
     const where: Prisma.MessageWhereInput = {};
 
     if (content) {
-      where.content = { contains: content, mode: "insensitive" };
+      where.content = { contains: content, mode: 'insensitive' };
     }
 
     if (userId) {
@@ -124,7 +150,7 @@ export class MessageRepository {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -187,7 +213,7 @@ export class MessageRepository {
   async findByRoomId(
     roomId: string,
     limit: number = 50,
-    cursor?: string
+    cursor?: string,
   ): Promise<MessageWithUser[]> {
     const where: Prisma.MessageWhereInput = { roomId };
 
@@ -216,13 +242,13 @@ export class MessageRepository {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async findByUserId(
     userId: string,
-    limit: number = 50
+    limit: number = 50,
   ): Promise<MessageWithUser[]> {
     return this.prisma.message.findMany({
       where: { userId },
@@ -236,7 +262,7 @@ export class MessageRepository {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

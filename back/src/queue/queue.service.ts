@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { Queue, Job } from "bullmq";
-import { MessageJobDTO } from "./dto/message-job.dto";
-import Redis from "ioredis";
-import { appConfig } from "../core/config/app.config";
+import { Injectable } from '@nestjs/common';
+import { Queue, Job } from 'bullmq';
+import { MessageJobDTO } from './dto/message-job.dto';
+import Redis from 'ioredis';
+import { appConfig } from '../core/config/app.config';
 
 interface QueueInfoResponse {
   name: string;
@@ -37,7 +37,7 @@ export class QueueService {
   private redis: Redis;
 
   constructor() {
-    this.messageQueue = new Queue("message-queue", {
+    this.messageQueue = new Queue('message-queue', {
       connection: {
         host: appConfig.redis.host,
         port: appConfig.redis.port,
@@ -50,7 +50,7 @@ export class QueueService {
         removeOnFail: 25,
         attempts: 2,
         backoff: {
-          type: "fixed",
+          type: 'fixed',
           delay: 1000,
         },
       },
@@ -58,11 +58,19 @@ export class QueueService {
   }
 
   async enqueueMessage(data: MessageJobDTO): Promise<void> {
-    const contentHash = Buffer.from(
-      `${data.userId}:${data.roomId}:${data.content}`
-    ).toString("base64");
+    const hashComponents = [data.userId, data.roomId, data.content];
+    if (data.storageId) {
+      hashComponents.push(data.storageId);
+    }
+
+    hashComponents.push(Date.now().toString());
+
+    const contentHash = Buffer.from(hashComponents.join(':')).toString(
+      'base64',
+    );
     const jobId = `msg-${contentHash}`;
-    await this.messageQueue.add("save-message", data, {
+
+    await this.messageQueue.add('save-message', data, {
       jobId,
       removeOnComplete: 5,
       removeOnFail: 3,
@@ -85,7 +93,7 @@ export class QueueService {
         id: job.id,
         data: this.isMessageJobData(job.data)
           ? job.data
-          : { content: "Unknown", roomId: "Unknown", userId: "Unknown" },
+          : { content: 'Unknown', roomId: 'Unknown', userId: 'Unknown' },
         failedReason: job.failedReason,
         stacktrace: this.formatStacktrace(job.stacktrace),
         attemptsMade: job.attemptsMade,
@@ -103,46 +111,46 @@ export class QueueService {
           delayed: delayed.length,
         },
         failedJobsDetails,
-        connectionStatus: "connected",
+        connectionStatus: 'connected',
         lastCheck: new Date().toISOString(),
       };
     } catch (error) {
       throw new Error(
-        `Failed to get queue info: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to get queue info: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
 
   async clearFailedJobs(): Promise<ClearJobsResult> {
     try {
-      await this.messageQueue.clean(0, 0, "failed");
+      await this.messageQueue.clean(0, 0, 'failed');
       return {
-        message: "All failed jobs cleared",
+        message: 'All failed jobs cleared',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
       throw new Error(
-        `Failed to clear jobs: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to clear jobs: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
 
   private isMessageJobData(data: any): data is MessageJobDTO {
     return (
-      typeof data === "object" &&
+      typeof data === 'object' &&
       data !== null &&
-      "content" in data &&
-      "roomId" in data &&
-      "userId" in data
+      'content' in data &&
+      'roomId' in data &&
+      'userId' in data
     );
   }
 
   private formatStacktrace(
-    stacktrace: string | string[] | null | undefined
+    stacktrace: string | string[] | null | undefined,
   ): string | null {
     if (Array.isArray(stacktrace)) {
-      return stacktrace.join("\n").slice(0, 500);
-    } else if (typeof stacktrace === "string") {
+      return stacktrace.join('\n').slice(0, 500);
+    } else if (typeof stacktrace === 'string') {
       return stacktrace.slice(0, 500);
     } else {
       return null;

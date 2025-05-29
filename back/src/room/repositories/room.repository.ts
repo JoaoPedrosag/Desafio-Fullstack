@@ -103,7 +103,7 @@ export class RoomRepository {
         },
       },
     });
-    return userRooms.map((ur) => ur.user);
+    return userRooms.map(ur => ur.user);
   }
 
   async getUserRooms(userId: string) {
@@ -113,7 +113,7 @@ export class RoomRepository {
         room: true,
       },
     });
-    return userRooms.map((ur) => ur.room);
+    return userRooms.map(ur => ur.room);
   }
 
   async getRoomStats(): Promise<RoomStats> {

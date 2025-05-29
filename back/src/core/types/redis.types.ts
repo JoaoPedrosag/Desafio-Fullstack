@@ -4,8 +4,8 @@ export interface RedisInfo {
 }
 
 export interface HealthCheckResponse {
-  status: "ok" | "error";
-  redis: "connected" | "disconnected";
+  status: 'ok' | 'error';
+  redis: 'connected' | 'disconnected';
   timestamp: string;
   data?: RedisInfo;
   error?: string;

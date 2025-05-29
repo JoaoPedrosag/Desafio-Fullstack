@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
-import { RedisService } from "./redis.service";
-import { RedisInfo } from "../types/redis.types";
+import { Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { RedisService } from './redis.service';
+import { RedisInfo } from '../types/redis.types';
 
 @Injectable()
 export class RedisCleanupService {
@@ -9,19 +9,19 @@ export class RedisCleanupService {
 
   constructor(private redisService: RedisService) {}
 
-  @Cron("0 0 * * * *")
+  @Cron('0 0 * * * *')
   async handleCleanup(): Promise<void> {
     try {
-      this.logger.log("🧹 Iniciando limpeza de dados orfãos no Redis...");
+      this.logger.log('🧹 Iniciando limpeza de dados orfãos no Redis...');
 
       await this.redisService.cleanupExpiredUsers();
 
       const info: RedisInfo = await this.redisService.getRedisInfo();
       this.logger.log(
-        `✅ Limpeza concluída. Salas: ${info.rooms.length}, Usuários: ${info.users.length}`
+        `✅ Limpeza concluída. Salas: ${info.rooms.length}, Usuários: ${info.users.length}`,
       );
     } catch (error) {
-      this.logger.error("❌ Erro durante limpeza do Redis:", error);
+      this.logger.error('❌ Erro durante limpeza do Redis:', error);
     }
   }
 

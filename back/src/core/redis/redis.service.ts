@@ -1,12 +1,12 @@
-import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
-import Redis from "ioredis";
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import Redis from 'ioredis';
 import {
   OnlineUser,
   RedisConfig,
   RedisInfo,
   RoomsWithUsers,
-} from "../types/redis.types";
-import { appConfig } from "../config/app.config";
+} from '../types/redis.types';
+import { appConfig } from '../config/app.config';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
@@ -60,7 +60,7 @@ export class RedisService implements OnModuleDestroy {
   async removeUserFromRoom(
     roomId: string,
     userId: string,
-    socketId: string
+    socketId: string,
   ): Promise<void> {
     const key = `room:${roomId}:users`;
     const userKey = `user:${userId}:${socketId}`;
@@ -81,7 +81,7 @@ export class RedisService implements OnModuleDestroy {
 
   async removeUserFromAllRooms(
     userId: string,
-    socketId: string
+    socketId: string,
   ): Promise<void> {
     const userKey = `user:${userId}:${socketId}`;
     const userData = await this.redis.hgetall(userKey);
@@ -98,7 +98,7 @@ export class RedisService implements OnModuleDestroy {
     if (userKeys.length === 0) return [];
 
     const pipeline = this.redis.pipeline();
-    userKeys.forEach((userKey) => pipeline.hgetall(userKey));
+    userKeys.forEach(userKey => pipeline.hgetall(userKey));
 
     const results = await pipeline.exec();
 
@@ -111,7 +111,7 @@ export class RedisService implements OnModuleDestroy {
       const [err, data] = results[i];
       const userKey = userKeys[i];
 
-      if (err || !data || typeof data !== "object") {
+      if (err || !data || typeof data !== 'object') {
         keysToClean.push(userKey);
         continue;
       }
@@ -137,8 +137,8 @@ export class RedisService implements OnModuleDestroy {
     }
 
     if (keysToClean.length > 0) {
-      this.cleanupInvalidKeys(key, keysToClean).catch((error) => {
-        console.error("Erro ao limpar chaves inválidas:", error);
+      this.cleanupInvalidKeys(key, keysToClean).catch(error => {
+        console.error('Erro ao limpar chaves inválidas:', error);
       });
     }
 
@@ -147,10 +147,10 @@ export class RedisService implements OnModuleDestroy {
 
   private async cleanupInvalidKeys(
     roomKey: string,
-    invalidKeys: string[]
+    invalidKeys: string[],
   ): Promise<void> {
     const pipeline = this.redis.pipeline();
-    invalidKeys.forEach((key) => {
+    invalidKeys.forEach(key => {
       pipeline.srem(roomKey, key);
       pipeline.del(key);
     });
@@ -165,7 +165,7 @@ export class RedisService implements OnModuleDestroy {
   async isUserInRoom(
     roomId: string,
     userId: string,
-    socketId: string
+    socketId: string,
   ): Promise<boolean> {
     const key = `room:${roomId}:users`;
     const userKey = `user:${userId}:${socketId}`;
@@ -174,22 +174,22 @@ export class RedisService implements OnModuleDestroy {
 
   async isUserInRoomByUserId(roomId: string, userId: string): Promise<boolean> {
     const users = await this.getRoomUsers(roomId);
-    return users.some((user) => user.userId === userId);
+    return users.some(user => user.userId === userId);
   }
 
   async removeUserPreviousConnections(
     roomId: string,
     userId: string,
-    currentSocketId: string
+    currentSocketId: string,
   ): Promise<void> {
     const users = await this.getRoomUsers(roomId);
     const userPreviousConnections = users.filter(
-      (user) => user.userId === userId && user.socketId !== currentSocketId
+      user => user.userId === userId && user.socketId !== currentSocketId,
     );
 
     if (userPreviousConnections.length > 0) {
       console.log(
-        `🧹 Removendo ${userPreviousConnections.length} conexões antigas do usuário ${userId}`
+        `🧹 Removendo ${userPreviousConnections.length} conexões antigas do usuário ${userId}`,
       );
 
       for (const oldConnection of userPreviousConnections) {
@@ -199,13 +199,13 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async getAllRoomsWithUsers(): Promise<RoomsWithUsers> {
-    const pattern = "room:*:users";
+    const pattern = 'room:*:users';
     const keys = await this.redis.keys(pattern);
 
     const result: RoomsWithUsers = {};
 
     for (const key of keys) {
-      const roomId = key.split(":")[1];
+      const roomId = key.split(':')[1];
       if (roomId) {
         result[roomId] = await this.getRoomUsers(roomId);
       }
@@ -215,7 +215,7 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async cleanupExpiredUsers(): Promise<void> {
-    const pattern = "user:*";
+    const pattern = 'user:*';
     const keys = await this.redis.keys(pattern);
 
     const pipeline = this.redis.pipeline();
@@ -232,8 +232,8 @@ export class RedisService implements OnModuleDestroy {
 
   async getRedisInfo(): Promise<RedisInfo> {
     return {
-      rooms: await this.redis.keys("room:*:users"),
-      users: await this.redis.keys("user:*"),
+      rooms: await this.redis.keys('room:*:users'),
+      users: await this.redis.keys('user:*'),
     };
   }
 

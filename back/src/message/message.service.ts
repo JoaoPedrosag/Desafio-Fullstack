@@ -3,21 +3,21 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
-import { Message } from "@prisma/client";
-import { MessageRepository } from "./repositories/message.repository";
-import { CreateMessageDto } from "./dto/create-message.dto";
-import { ChatGateway } from "../chat/chat.gateway";
-import { StorageService } from "../storage/storage.service";
+} from '@nestjs/common';
+import { Message } from '@prisma/client';
+import { MessageRepository } from './repositories/message.repository';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { ChatGateway } from '../chat/chat.gateway';
+import { StorageService } from '../storage/storage.service';
 import {
   MessageWithUser,
   MessageWithRelations,
   MessageStats,
   MessageSearchFilters,
   MessagesResponse,
-} from "../core/types/message.types";
-import { PrismaService } from "../prisma/prisma.service";
-import { RoomService } from "../room/room.service";
+} from '../core/types/message.types';
+import { PrismaService } from '../prisma/prisma.service';
+import { RoomService } from '../room/room.service';
 
 @Injectable()
 export class MessageService {
@@ -26,27 +26,19 @@ export class MessageService {
     private readonly prisma: PrismaService,
     private readonly chatGateway: ChatGateway,
     private readonly storageService: StorageService,
-    private readonly roomService: RoomService
+    private readonly roomService: RoomService,
   ) {}
 
   async create(
     dto: CreateMessageDto,
-    userId: string
+    userId: string,
   ): Promise<MessageWithRelations> {
-    const message = await this.messageRepository.createMessage({
+    const messageWithRelations = await this.messageRepository.createMessage({
       content: dto.content,
       userId,
       roomId: dto.roomId,
       ...(dto.storageId && { storageId: dto.storageId }),
     });
-
-    const messageWithRelations = await this.messageRepository.findWithRelations(
-      message.id
-    );
-
-    if (!messageWithRelations) {
-      throw new Error("Failed to fetch created message with relations");
-    }
 
     return messageWithRelations;
   }
@@ -54,25 +46,25 @@ export class MessageService {
   async findMessages(
     roomId: string,
     take: number = 50,
-    cursor?: string
+    cursor?: string,
   ): Promise<MessagesResponse> {
     if (take > 100) {
-      throw new BadRequestException("Limit too high");
+      throw new BadRequestException('Limit too high');
     }
 
     const room = await this.roomService.findOne(roomId);
 
     if (!room) {
-      throw new NotFoundException("Sala não encontrada");
+      throw new NotFoundException('Sala não encontrada');
     }
 
     const messages = await this.messageRepository.findByRoomId(
       roomId,
       take,
-      cursor
+      cursor,
     );
 
-    const enriched = messages.map((message) => ({
+    const enriched = messages.map(message => ({
       ...message,
       user: {
         id: message.user.id,
@@ -103,11 +95,11 @@ export class MessageService {
   async edit(id: string, content: string, userId: string): Promise<Message> {
     const message = await this.messageRepository.findById(id);
     if (!message) {
-      throw new Error("Message not found");
+      throw new Error('Message not found');
     }
 
     if (message.userId !== userId) {
-      throw new Error("Unauthorized to edit this message");
+      throw new Error('Unauthorized to edit this message');
     }
 
     return this.messageRepository.editMessage(id, content);
@@ -116,11 +108,11 @@ export class MessageService {
   async delete(id: string, userId: string): Promise<void> {
     const message = await this.messageRepository.findById(id);
     if (!message) {
-      throw new Error("Message not found");
+      throw new Error('Message not found');
     }
 
     if (message.userId !== userId) {
-      throw new Error("Unauthorized to delete this message");
+      throw new Error('Unauthorized to delete this message');
     }
 
     await this.messageRepository.deleteMessage(id);
@@ -136,7 +128,7 @@ export class MessageService {
 
   async getMessagesByUserId(
     userId: string,
-    limit?: number
+    limit?: number,
   ): Promise<MessageWithUser[]> {
     return await this.messageRepository.findByUserId(userId, limit);
   }
@@ -150,7 +142,7 @@ export class MessageService {
     userId?: string,
     roomId?: string,
     hasStorage?: boolean,
-    isEdited?: boolean
+    isEdited?: boolean,
   ): Promise<MessageWithUser[]> {
     const filters = { content, userId, roomId, hasStorage, isEdited };
     return await this.messageRepository.searchMessages(filters);
@@ -175,13 +167,13 @@ export class MessageService {
   async updateMessage(
     id: string,
     content: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     const message = await this.messageRepository.findById(id);
 
     if (!message || message.userId !== userId) {
       throw new ForbiddenException(
-        "Você não tem permissão para editar esta mensagem"
+        'Você não tem permissão para editar esta mensagem',
       );
     }
 
@@ -200,7 +192,7 @@ export class MessageService {
 
     if (!message || message.userId !== userId) {
       throw new ForbiddenException(
-        "Você não tem permissão para deletar esta mensagem"
+        'Você não tem permissão para deletar esta mensagem',
       );
     }
 

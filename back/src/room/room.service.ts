@@ -141,10 +141,10 @@ export class RoomService {
       where: { userId },
     });
 
-    const readMap = new Map(reads.map((r) => [`${r.roomId}`, r.lastRead]));
+    const readMap = new Map(reads.map(r => [`${r.roomId}`, r.lastRead]));
 
     const response = await Promise.all(
-      roomsToReturn.map(async (room) => {
+      roomsToReturn.map(async room => {
         const joined = room.users.length > 0;
         const lastRead = readMap.get(room.id);
 
@@ -250,7 +250,7 @@ export class RoomService {
 
     const users = await this.roomRepository.getRoomUsers(roomId);
 
-    return users.map((user) => ({
+    return users.map(user => ({
       userId: user.id,
       username: user.username,
     }));
