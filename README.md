@@ -11,8 +11,6 @@ Um sistema de **chat em tempo real** construído com NestJS, usando WebSockets, 
 
 - 🔗 **Frontend (Web App):** [https://www.infinities.info/](https://www.infinities.info/)
 - 📡 **API Backend:** [https://api.infinities.info/](https://api.infinities.info/)
-- 📁 **Repositório:** [https://github.com/JoaoPedrosag/chat-app]
-
 ---
 
 ## ✨ Funcionalidades
