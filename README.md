@@ -157,6 +157,27 @@ Este comando simula 100 usuários conectando-se ao servidor WebSocket em paralel
 
 ---
 
+## 🚀 Planos para Escalabilidade
+
+Embora o sistema já suporte múltiplas instâncias backend e balanceamento de carga com HAProxy, há diversas melhorias e estratégias que poderiam ser implementadas para permitir que a aplicação escale com maior robustez e performance:
+
+### ⚙️ Backend e Infraestrutura
+
+- **Migrar para Kubernetes (K8s)**: Para orquestração automatizada de instâncias, balanceamento, escalabilidade e deploys resilientes.
+- **Separar os Workers em containers dedicados**
+- **Monitoramento e métricas**: Usar Prometheus e Grafana para acompanhar uso de CPU, memória, jobs pendentes, throughput etc.
+- **Compressão de mensagens WebSocket**: Reduzir o tamanho das mensagens trocadas entre cliente e servidor.
+- **Elastic Load Balancer (AWS/GCP)**: Substituir o HAProxy por uma solução nativa de nuvem com auto scaling integrado.
+
+### 🗃️ Otimizações no PostgreSQL
+
+- **Replicação com read/write split**: Usar instâncias de leitura para aliviar a carga do primário.
+- **PgBouncer para pooling de conexões**: Evita excesso de conexões simultâneas.
+- **Índices inteligentes**: Para colunas com filtros e buscas frequentes.
+- **Cache Redis**: Para informações acessadas com frequência, como salas e usuários online.
+- **Arquivamento de mensagens antigas**: Fora do banco (ex: S3 ou Cloudflare R2) para manter performance com dados ativos apenas.
+> 📌 Estas melhorias visam suportar **milhares de usuários simultâneos com baixa latência**, alta disponibilidade e escalabilidade contínua.
+> 
 ## 🎨 Frontend (React)
 
 O frontend foi desenvolvido com **React + TypeScript**, utilizando **Chakra UI** como design system para uma interface moderna e responsiva.
